@@ -1,0 +1,56 @@
+name: Submit a PR to FemiwikiSkin repository
+# See https://www.mediawiki.org/wiki/OOUI/Themes#Custom_themes
+on:
+  push:
+    paths-ignore:
+    - '.github/**'
+
+jobs:
+
+  build:
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '6.x'
+    - name: Cache node modules
+      uses: actions/cache@v1
+      env:
+        cache-name: cache-node-modules
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Build Femiwiki theme
+      run: grunt build --graphics=vector
+
+    - uses: actions/checkout@v2
+      with:
+        repository: femiwiki/FemiwikiSkin
+        path: Femiwiki
+
+    - name: Move dist files
+      run: |
+        cp dist/oojs-ui-*-femiwiki.css Femiwiki/resources/ooui/
+        cp dist/themes/femiwiki/images/icons/*-progressive.svg Femiwiki/resources/ooui/images/icons/
+
+    - run: echo "::set-output name=version::$(echo ${{github.sha}} | cut -c1-8)"
+      id: version
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v2
+      with:
+        token: ${{ secrets.BOT_TOKEN }}
+        path: Femiwiki
+        commit-message: |
+          OOUI theme update to ${{steps.version.outputs.version}}
+          related commit: https://github.com/${{github.repository}}/commit/${{steps.version.outputs.version}}
+        title: OOUI theme Update to ${{steps.version.outputs.version}}
+        branch: Update-ooui-theme
