@@ -49,7 +49,7 @@ jobs:
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v2
       with:
-        token: ${{ secrets.BOT_TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN }}
         path: Femiwiki
         commit-message: |
           OOUI theme update to ${{steps.version.outputs.version}}
