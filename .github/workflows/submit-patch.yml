@@ -37,8 +37,10 @@ jobs:
 
     - name: Move dist files
       run: |
-        cp dist/oojs-ui-*-femiwiki.css Femiwiki/resources/ooui/
-        cp dist/themes/femiwiki/images/icons/*-progressive.svg Femiwiki/resources/ooui/images/icons/
+        rm -rf Femiwiki/resources/ooui/
+        mkdir -p Femiwiki/resources/ooui/images/icons/
+        cp dist/oojs-ui-*femiwiki* Femiwiki/resources/ooui/
+        cp -r dist/themes/femiwiki/* Femiwiki/resources/ooui/
 
     - run: echo "::set-output name=version::$(echo ${{github.sha}} | cut -c1-8)"
       id: version
